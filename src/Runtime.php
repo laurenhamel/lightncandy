@@ -19,6 +19,7 @@ Origin: https://github.com/zordius/lightncandy
 
 namespace LightnCandy;
 use \LightnCandy\Encoder;
+use \LightnCandy\Exception;
 
 /**
  * LightnCandy class for Object property access on a string.
@@ -43,9 +44,10 @@ class Runtime extends Encoder
 {
     const DEBUG_ERROR_LOG = 1;
     const DEBUG_ERROR_EXCEPTION = 2;
-    const DEBUG_TAGS = 4;
-    const DEBUG_TAGS_ANSI = 12;
-    const DEBUG_TAGS_HTML = 20;
+    const DEBUG_ERROR_MISSING = 4;
+    const DEBUG_TAGS = 12;
+    const DEBUG_TAGS_ANSI = 20;
+    const DEBUG_TAGS_HTML = 28;
 
     /**
      * Output debug info.
@@ -101,13 +103,16 @@ class Runtime extends Encoder
      *
      * @throws \Exception
      */
-    public static function err($cx, $err) {
+    public static function err($cx, \Exception $err, $miss = false ) { 
         if ($cx['flags']['debug'] & static::DEBUG_ERROR_LOG) {
             error_log($err);
             return;
         }
-        if ($cx['flags']['debug'] & static::DEBUG_ERROR_EXCEPTION) {
-            throw new \Exception($err);
+        if (($cx['flags']['exception'] && !$miss) || (($cx['flags']['debug'] & static::DEBUG_ERROR_EXCEPTION) && !$miss)) {
+            throw $err;
+        }
+        if (($cx['flags']['exception'] && $miss) || ($cx['flags']['debug'] & static::DEBUG_ERROR_MISSING) && $miss) {
+            throw $err;
         }
     }
 
@@ -118,7 +123,7 @@ class Runtime extends Encoder
      * @param string $v expression
      */
     public static function miss($cx, $v) {
-        static::err($cx, "Runtime: $v does not exist");
+        static::err($cx, new Exception("Runtime: $v does not exist"), true);
     }
 
     /**
@@ -679,7 +684,8 @@ class Runtime extends Encoder
         try {
             $r = call_user_func_array($cx['helpers'][$ch], $args);
         } catch (\Exception $E) {
-            $e = "Runtime: call custom helper '$ch' error: " . $E->getMessage();
+            $E->setMessage("Runtime: call custom helper '$ch' error: " . $E->getMessage());
+            $e = $E;
         }
 
         if($e !== null) {

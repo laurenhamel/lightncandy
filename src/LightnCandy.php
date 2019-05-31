@@ -23,6 +23,7 @@ use \LightnCandy\Context;
 use \LightnCandy\Compiler;
 use \LightnCandy\Partial;
 use \LightnCandy\Exporter;
+use \LightnCandy\Exception;
 
 /**
  * LightnCandy major static class
@@ -107,7 +108,7 @@ class LightnCandy extends Flags
                 error_log(implode("\n", $context['error']));
             }
             if ($context['flags']['exception']) {
-                throw new \Exception(implode("\n", $context['error']));
+                throw new Exception(implode("\n", $context['error']));
             }
             return true;
         }

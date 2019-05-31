@@ -17,6 +17,7 @@ Origin: https://github.com/zordius/lightncandy
  * @author     Zordius <zordius@gmail.com>
  */
 
+require_once(__DIR__ . '/Exception.php');
 require_once(__DIR__ . '/Flags.php');
 require_once(__DIR__ . '/Context.php');
 require_once(__DIR__ . '/Token.php');
